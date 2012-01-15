@@ -26,7 +26,7 @@ import os
 import glob
 import re
 import ConfigParser
-import gtk
+from gi.repository import Gtk
 
 #TODO: THIS MODULE IS NOT CROSS DISTRIBUTION BUT CAN BE USE FOR DYNAMIC CONFIGURATION
 #from gi.repository import Unity, Dbusmenu
@@ -64,7 +64,7 @@ class DesktopFileSet:
             yield app_info_list + [True] + app_config
         for file_name in self.global_set:
             app_info_list = DesktopFile(file_name, local=False).get_app_info()
-            yield app_info_list + [True] + 4*[False] + ['default']
+            yield app_info_list + [True] + 2*[False] + [None, False, 'default']
 		
     def configure_file (self, file_name):
         if file_name in self.local_set:
@@ -142,8 +142,10 @@ class DesktopFile:
         Configured, (Selected by default : unselected), Mode, 32bits, Compression
         """
         self.app_exec= self.config.get('Desktop Entry','Exec')
-        if self.is_configured(): return [True, True] + self.get_mode()
-        else: return [False, False] + [None] + self.get_exec_config(self.app_exec)[1:]
+        if self.is_configured():
+            return [True, True] + self.get_mode()
+        else:
+            return [False, False] + [None] + self.get_exec_config(self.app_exec)[1:]
         #else: return [False, False] + [None] + [False] + ['default']
 
     def get_mode(self):

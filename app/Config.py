@@ -20,7 +20,7 @@
 ### END LICENSE
 
 import os
-import gtk
+from gi.repository import Gtk
 
 #DESKTOP FILES PATH
 user_home_directory = os.path.expanduser('~')
@@ -29,7 +29,8 @@ user_desktop_file_directory = user_home_directory + user_relative_desktop_file_d
 global_desktop_file_directory = '/usr/share/applications/'
 
 #ICONS FILE PATH
-icon_file_directory = '/usr/share/bumblebee-ui/icons/'
+#icon_file_directory = '/usr/share/bumblebee-ui/icons/'
+icon_file_directory = './icons/'
 
 #ACCEPTED COMPRESSION
 compression_list=['jpeg','proxy','rgb','yuv','xv']
@@ -50,7 +51,8 @@ to_configure_color='#FFFF33'
 to_unconfigure_color='#FF0033'
 
 #BUMBLEBEE DEFAULT CONFIGURATION
-config_file_path='/etc/bumblebee/bumblebee.conf'
+#config_file_path='/etc/bumblebee/bumblebee.conf'
+config_file_path='/etc/default/debumblebee'
 #GET BUMBLEBEE CONFIGURATION VALUE
 def get_config_value(variable_name):
     """Function to get configuration value inside a shell script"""
