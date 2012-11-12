@@ -20,7 +20,7 @@
 ### END LICENSE
 
 import os
-import gtk
+from gi.repository import Gtk
 import sys
 import gettext
 
@@ -28,10 +28,12 @@ import gettext
 
 #BUMBLEBEE DEFAULT CONFIGURATION
 config_file_path='/etc/bumblebee/bumblebee.conf'
-optirun_installation_path='/usr/local/bin/optirun'
+optirun_installation_path='/usr/bin/optirun'
 #With KDE, you might need to change this value to the menu file you need
 menu_file_path=None
-icon_file_directory = '/usr/share/bumblebee-ui/icons/'
+#ICONS FILE PATH
+#icon_file_directory = '/usr/share/bumblebee-ui/icons/'
+icon_file_directory = './icons/'
 
 #TEST IF OPTIRUN IS INSTALLED
 def check_install(name, path):
@@ -77,7 +79,7 @@ def get_config_value(variable_name):
             return line.split('=',1)[1].replace("\n","")
 
 default_compression= get_config_value('VGL_COMPRESS')
-vgl_display= get_config_value('VGL_DISPLAY').replace(":","")
+vgl_display= get_config_value('VirtualDisplay').replace(":","")
 
 ### INDICATOR SETTINGS ###
 #DEFAULT APPLICATIONS IN THE PREFERRED APP MENU :

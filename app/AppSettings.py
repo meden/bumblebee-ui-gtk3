@@ -20,13 +20,15 @@
 ### END LICENSE
 
 #UI MODULE
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import GObject, Gtk, Gdk, GdkPixbuf
+
 import os
 import sys
 import fcntl
 import xdg.Menu
+
 #ORIGINAL MODULE
 import Config
 import DesktopFile
@@ -39,7 +41,7 @@ gettext.install('bumblebee-ui', os.path.abspath(os.path.join(os.path.dirname(sys
 class IconSet:
     """This small class contain the settings computed for categories"""
     def __init__(self):
-        self.icon_theme= gtk.icon_theme_get_default()
+        self.icon_theme= Gtk.IconTheme.get_default()
         self.icon_theme.append_search_path(Config.icon_file_directory)
 
     def get_uri (self, icon_name, icon_size):
@@ -49,7 +51,7 @@ class IconSet:
         try :
             return self.icon_theme.load_icon(icon_name, icon_size, 0)
         except :
-            try : return gtk.gdk.pixbuf_new_from_file_at_size(icon_name, icon_size, icon_size)
+            try : return GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, icon_size, icon_size)
             except : return self.icon_theme.load_icon(Config.default_icon_name, icon_size, 0)
 
     def get_path (self, icon_name, icon_size=Config.icon_size):
@@ -69,14 +71,15 @@ class Applications_settings():
         return False
 
     def destroy(self,widget,args):
-        if __name__=="__main__": gtk.main_quit()
+        if __name__=="__main__": Gtk.main_quit()
         else : self.window.destroy()
 
     def __init__(self):
         #FIXME Seems not to be clean or shorter enough
-        self.icon_set=IconSet()
+        self.icon_set = IconSet()
+
         # MAIN WINDOW
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
         self.window.connect("delete_event", self.delete_event)
         self.window.connect("destroy", self.destroy)
         self.window.set_title(_(u"Bumblebee - Applications Settings"))
@@ -86,21 +89,22 @@ class Applications_settings():
         self.window.set_icon(self.icon_set.get_pixbuf('bumblebee', 48))
 
         # NOTEBOOK
-        self.notebook= gtk.Notebook()
-        self.notebook.set_tab_pos(gtk.POS_TOP)
+        self.notebook= Gtk.Notebook()
+        self.notebook.set_tab_pos(Gtk.PositionType.TOP)
         self.notebook.set_border_width(10)
         self.window.add(self.notebook)
 
         # SELECT APPLICATION
             # LIST
-        self.app_list = gtk.TreeStore(str,str,str,gtk.gdk.Pixbuf,bool,bool,bool,str,bool,str,bool,str)
+        #self.app_list = Gtk.TreeStore(str,str,str,GdkPixbuf.Pixbuf,bool,bool,bool,str,bool,str,bool,str)
+        self.app_list = Gtk.TreeStore(str,str,str,GdkPixbuf.Pixbuf,bool,bool,bool,bool,bool,str,bool,str)
         self.categorie_iter={}
         self.buildMenu()
 
             # VIEW
-        self.select_app_view = gtk.TreeView(self.app_list)
+        self.select_app_view = Gtk.TreeView(self.app_list)
         self.treeselection = self.select_app_view.get_selection()
-        self.treeselection.set_mode(gtk.SELECTION_NONE)
+        self.treeselection.set_mode(Gtk.SelectionMode.NONE)
         self.select_app_view.set_rules_hint(True)
         self.select_app_view.show()
         self.build_select_view()
@@ -117,15 +121,16 @@ class Applications_settings():
             tab_title = _(u"Select applications"),
             instruction_text = _(u"Choose the application you want to configure to use with the discrete graphic card."),
             view = self.select_app_view ,
-            button_list = [self.action_button(stock=gtk.STOCK_APPLY, action=self.apply_app_set)] )
+            button_list = [self.action_button(stock=Gtk.STOCK_APPLY, action=self.apply_app_set)] )
             #TODO Create an apply now button which relaunch unity with unity --replace or use dynamic desktop configuration (See Ubuntu desktop specification)
+
         # CONFIGURE APPLICATION
             # LIST
         self.configured_apps = self.app_list.filter_new(root=None)
         self.configured_apps.set_visible_column(5)
 
             # VIEW
-        self.config_app_view = gtk.TreeView(self.configured_apps)
+        self.config_app_view = Gtk.TreeView(self.configured_apps)
         self.config_app_view.set_rules_hint(True)
         self.build_config_view()
         self.config_app_view.show()
@@ -145,28 +150,28 @@ class Applications_settings():
 
     def build_notebook_page(self , tab_title, instruction_text , view , button_list=[]):
         # SCROLL FRAME
-        scrolled_window=gtk.ScrolledWindow()
+        scrolled_window=Gtk.ScrolledWindow()
         scrolled_window.add(view)
         # ACTION AREA
-        hbox=gtk.HButtonBox()
-        hbox.set_layout(gtk.BUTTONBOX_START)
+        hbox=Gtk.ButtonBox(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox.set_layout(Gtk.ButtonBoxStyle.START)
         hbox.set_spacing(10)
         # SPECIFIC BUTTON
         for button in button_list : hbox.add(button)
         # COMMON BUTTON
-        help_button=self.action_button(stock=gtk.STOCK_HELP, action=self.displayHelp, args=instruction_text)
-        close_button=self.action_button(stock=gtk.STOCK_CLOSE, action=self.destroy)
+        help_button=self.action_button(stock=Gtk.STOCK_HELP, action=self.displayHelp, args=instruction_text)
+        close_button=self.action_button(stock=Gtk.STOCK_CLOSE, action=self.destroy)
         for button in [help_button,close_button]:
             hbox.add(button)
             hbox.set_child_secondary(button, True)
         # CONTAINER
-        vbox= gtk.VBox(homogeneous=False)
+        vbox= Gtk.VBox(homogeneous=False)
         vbox.pack_start(scrolled_window, True, True, 10)
         vbox.pack_end(hbox, False, False, 10)
-        box=gtk.HBox(homogeneous=True)
+        box=Gtk.HBox(homogeneous=True)
         box.pack_start(vbox, True, True, 10)
         # NOTEBOOK PAGE
-        notebook_label= gtk.Label(tab_title)
+        notebook_label= Gtk.Label(tab_title)
         return self.notebook.append_page(box, notebook_label)
 
     def displayHelp(self,widget,args):
@@ -179,7 +184,7 @@ class Applications_settings():
         dialog.destroy()
 
     def action_button(self, action, args=None, label=None, stock=None):
-        button= gtk.Button(label,stock)
+        button= Gtk.Button(label,stock)
         button.connect("clicked",action, args)
         return button
 
@@ -198,40 +203,50 @@ class Applications_settings():
                     iter=self.app_list.append(None, cat_info + [False, Config.to_configure_color])
                     self.categorie_iter.update({main_category:iter})
                     self.buildMenu(entry, main_category)
-                else : self.buildMenu(entry, category)
+                else :
+                    self.buildMenu(entry, category)
+
             elif isinstance(entry, xdg.Menu.MenuEntry):
                 app_info = DesktopFile.GetDesktop(entry, category).getInfo()
                 app_info[3]=self.icon_set.get_pixbuf(app_info[3])
-                if app_info[2] : parent_iter=self.categorie_iter.get(app_info[2])
-                else : parent_iter=None
+
+                if app_info[2] :
+                    parent_iter=self.categorie_iter.get(app_info[2])
+                else :
+                    parent_iter=None
+
                 if app_info[5] == True:
                     self.configured_file_exist=True
+                    print ['if: '] + app_info + [True, Config.configured_color]
                     self.app_list.append(parent_iter, app_info + [True, Config.configured_color])
                     if app_info[2] :
                         self.add_child_for_categorie(app_info[2])
                         self.app_list[parent_iter][5]=True #Used to only show the categories with configured child
-                else : self.app_list.append(parent_iter, app_info + [False, Config.to_configure_color])
+                else :
+                    print ['else: '] + app_info + [False, Config.to_configure_color]
+                    self.app_list.append(parent_iter, app_info + [False, Config.to_configure_color])
 
     def build_select_view(self):
         # APPLICATION OR CATEGORIE NAME COLUMN
-        self.column = gtk.TreeViewColumn(_(u'Applications'))
+        self.column = Gtk.TreeViewColumn(_(u'Applications'))
 
         # SELECT CHECKBOX
-        rendererToggle = gtk.CellRendererToggle()
+        rendererToggle = Gtk.CellRendererToggle()
         self.column.pack_start(rendererToggle, True)
-        self.column.set_attributes(rendererToggle, active=6, visible=4)
+        self.column.add_attribute(rendererToggle, 'active', 6)
+        self.column.add_attribute(rendererToggle, 'visible', 4)
         rendererToggle.set_property('activatable', True)
         rendererToggle.connect('toggled', self.on_select_app)
 
         # APPLICATION ICON
-        rendererIcon=gtk.CellRendererPixbuf()
+        rendererIcon=Gtk.CellRendererPixbuf()
         self.column.pack_start(rendererIcon, True)
-        self.column.set_attributes(rendererIcon, pixbuf=3)
+        self.column.add_attribute(rendererIcon, 'pixbuf', 3)
 
         # APPLICATION NAME
-        rendererText=gtk.CellRendererText()
+        rendererText=Gtk.CellRendererText()
         self.column.pack_start(rendererText, True)
-        self.column.set_attributes(rendererText, text=0)
+        self.column.add_attribute(rendererText, 'text', 0)
 
         # BACKGROUND COLOR SET
         for renderer in [rendererToggle, rendererIcon, rendererText]:
@@ -244,8 +259,8 @@ class Applications_settings():
 
         #FILE NAME COLUMN
         self.select_app_view.append_column(self.column)
-        rendererText2=gtk.CellRendererText()
-        column1 = gtk.TreeViewColumn(_(u'File Name'),rendererText2, text=1)
+        rendererText2=Gtk.CellRendererText()
+        column1 = Gtk.TreeViewColumn(_(u'File Name'),rendererText2, text=1)
         column1.add_attribute(rendererText2, "cell-background-set",10)
         column1.add_attribute(rendererText2, "cell-background",11)
         self.select_app_view.append_column(column1)
@@ -271,14 +286,14 @@ class Applications_settings():
     def build_config_view(self):
         """Function to create a setting list for applications configured for Bumblebee"""
         # APPLICATION NAME COLUMNS
-        self.column=gtk.TreeViewColumn(_(u'Applications'))
+        self.column=Gtk.TreeViewColumn(_(u'Applications'))
 
-        rendererIcon=gtk.CellRendererPixbuf()
+        rendererIcon=Gtk.CellRendererPixbuf()
         self.column.pack_start(rendererIcon, False)
-        self.column.set_attributes(rendererIcon, pixbuf=3)
-        rendererText=gtk.CellRendererText()
+        self.column.add_attribute(rendererIcon, 'pixbuf', 3)
+        rendererText=Gtk.CellRendererText()
         self.column.pack_start(rendererText, False)
-        self.column.set_attributes(rendererText, text=0)
+        self.column.add_attribute(rendererText, 'text', 0)
 
         self.config_app_view.append_column(self.column)
 
@@ -296,15 +311,15 @@ class Applications_settings():
     def build_combo_column(self, column_name, column_id, value_list):
         """Function to build the columns with selection from a list"""
         # COMBOBOX CELL
-        combo_list = gtk.ListStore(str)
+        combo_list = Gtk.ListStore(str)
         for value in value_list: combo_list.append([value])
-        rendererCombo = gtk.CellRendererCombo()
+        rendererCombo = Gtk.CellRendererCombo()
         rendererCombo.set_properties(model=combo_list, editable=True)
         rendererCombo.set_property("has-entry", False)
         rendererCombo.set_property("text-column", 0)
         rendererCombo.connect("edited", self.on_combo_edit, column_id)
         # COMBOBOX COLUMN
-        column = gtk.TreeViewColumn(column_name)
+        column = Gtk.TreeViewColumn(column_name)
         column.pack_start(rendererCombo, False)
         column.add_attribute(rendererCombo, "text", column_id)
         column.add_attribute(rendererCombo, "visible", 4)
@@ -318,11 +333,11 @@ class Applications_settings():
         #DesktopFile(self.app_list[iter][1]).set_exec_config(self.app_list[iter][7],self.app_list[iter][8],self.app_list[iter][9])
 
     def build_config_column(self, column_name, column_id):
-        rendererToggle = gtk.CellRendererToggle()
+        rendererToggle = Gtk.CellRendererToggle()
         rendererToggle.set_property('activatable', True)
         rendererToggle.connect('toggled', self.on_config_check ,(self.configured_apps, column_id))
 
-        column = gtk.TreeViewColumn(column_name, rendererToggle, active=column_id, visible=4)
+        column = Gtk.TreeViewColumn(column_name, rendererToggle, active=column_id, visible=4)
         self.config_app_view.append_column(column)
 
     def on_config_check(self, cell, row, user_data):
@@ -367,7 +382,7 @@ class Applications_settings():
                 self.app_list.set(self.categorie_iter[categorie_name], 5, False)
 
     def main(self):
-        gtk.main()
+        Gtk.main()
         return 0
 
 if __name__ == "__main__":

@@ -44,7 +44,7 @@ class GetDesktop():
     #DESKTOP ENTRY PARSE TO DETERMINE STATES
     def isLocal(self):
         if data_home in self.desktopEntry.getFileName(): return True
-    
+
     def isConfigured(self):
         """Function to check if the desktop file is configured for Bumblebee or not"""
         if self.isLocal() \
@@ -58,7 +58,7 @@ class GetDesktop():
     def getConfiguredEntry(self):
         return [ self.desktopEntry.getName(), 
             self.desktopEntry.get(key='Exec',group='BumblebeeEnable Shortcut Group').split(' ')]
-    
+
     def getInfo(self):
         self.entry_info=[self.desktopEntry.getName().encode("utf-8") , 
                          self.desktop_file_id[0].encode("utf-8") , 
@@ -85,18 +85,18 @@ class GetDesktop():
             exec_config=self.getExecConfig(self.desktopEntry.get(key='Exec', group='BumblebeeDisable Shortcut Group'))
             return entry_common + [modes['option']] + exec_config[1:]
         else : return entry_common + ['Unrecognized mode'] + exec_config[1:]
-			
+
     def setTrue( arg, next_arg=None): return {arg:True}
-    
+
     def getCompression( arg, next_arg=None, default=Config.default_compression): 
         if (next_arg in Config.compression_list and next_arg != default): return {arg:next_arg}
-    
+
     def getExecConfig(self, Exec, i=-1, 
         case={'-32':setTrue, '-f':setTrue, '-c':getCompression},
         skip=['optirun', 'ecoptirun', '-d', ':0', ':1', ':2'] + Config.compression_list):
         """Function to search for configuration inside optirun arguments in the desktop file object : 
         Force_eco, 32bits, Compression"""
-        arg_list=Exec.split(' ')	
+        arg_list=Exec.split(' ')
         exec_config={'-f':False, '-32':False, '-c':'default'}
         for arg in arg_list:
             i = i+1
@@ -157,17 +157,17 @@ class SetDesktop:
         self.entry.set("Name", name, group)
         self.entry.set("Exec", cmd, group)
         self.entry.set("TargetEnvironment", "Unity", group)
-        
+
     def getShortcutGroup(self,shortcut):
         #return '{0} {1}'.format(shortcut,group))
         return "%s Shortcut Group" % shortcut
-        
+
     def setEntryComment(self, tag="File created by bumblebee-ui"):
         comment_value= self.entry.get("Comment",locale=False)
         if comment_value : tagged_value= comment_value + "(%s)" % tag
         else : tagged_value=tag
         self.entry.set("Comment", tagged_value ,locale=False)
-        
+
     def setOptirun(self, mode, bits32, compression):
         option=list()
         if bits32 : option.append("-32")
@@ -187,7 +187,7 @@ class SetDesktop:
                                 ['optirun','-f'] + option, \
                                 ['BumblebeeDisable','BumblebeeEnable'])
         self.writeEntry()
-	
+
     def setOptirunKeys(self, Exec, ShortcutExec, ShortcutList):
         self.setExec(Exec)
         self.setShortcutKey('set', values=ShortcutList )
@@ -206,7 +206,7 @@ class SetDesktop:
         except : return False
         
     def unsetEntry(self):
-		entry_name=self.entry.getName()
+        entry_name=self.entry.getName()
         if self.isCreated():
             os.remove(self.local_path)
             print "File created by bumblebee-ui removed : " + entry_name
@@ -221,7 +221,7 @@ class SetDesktop:
         for shortcut in shortcuts : 
             self.entry.removeGroup(self.getShortcutGroup(shortcut))
 
-    def writeEntry(self):     
+    def writeEntry(self):
         try : 
             self.entry.validate()
         except ValidationError, e:
@@ -237,7 +237,7 @@ class SetDesktop:
         finally : 
             self.entry.write(self.local_path)
             os.chmod(self.local_path,0755)
-        
+
 
 #TODO Write a new class : to get the configuration inside the MODEL desktop files
 #class BumblebeeModelDesktop:
