@@ -51,8 +51,8 @@ to_configure_color='#FFFF33'
 to_unconfigure_color='#FF0033'
 
 #BUMBLEBEE DEFAULT CONFIGURATION
-#config_file_path='/etc/bumblebee/bumblebee.conf'
-config_file_path='/etc/default/debumblebee'
+config_file_path='/etc/bumblebee/bumblebee.conf'
+
 #GET BUMBLEBEE CONFIGURATION VALUE
 def get_config_value(variable_name):
     """Function to get configuration value inside a shell script"""
@@ -61,7 +61,7 @@ def get_config_value(variable_name):
             return line.split('=',1)[1].replace("\n","")
 
 default_compression= get_config_value('VGL_COMPRESS')
-vgl_display= get_config_value('VGL_DISPLAY').replace(":","")
+vgl_display= get_config_value('VirtualDisplay').replace(":","")
 
 #CATEGORIES CONFIGURATION
 
