@@ -175,10 +175,10 @@ class Applications_settings():
         return self.notebook.append_page(box, notebook_label)
 
     def displayHelp(self,widget,args):
-        dialog = gtk.MessageDialog(self.window,
-                                    gtk.DIALOG_DESTROY_WITH_PARENT,
-                                    gtk.MESSAGE_QUESTION,
-                                    gtk.BUTTONS_CLOSE)
+        dialog = Gtk.MessageDialog(self.window,
+                                    Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                    Gtk.MessageType.QUESTION,
+                                    Gtk.ButtonsType.CLOSE)
         dialog.set_properties(text=_("Bumblebee - Help"), secondary_text=args)
         dialog.run()
         dialog.destroy()
