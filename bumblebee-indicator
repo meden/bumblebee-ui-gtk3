@@ -19,6 +19,8 @@
 #
 ### END LICENSE
 
+from abc import ABCMeta, abstractmethod
+
 # UI MODULE
 import gi
 gi.require_version('Gtk', '3.0')
@@ -44,42 +46,17 @@ import fcntl
 import gettext
 gettext.install('bumblebee-ui', os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'i18n')))
 
-class BumblebeeIndicator():
-#TODO There must be a better way to get the icon than the URI
-#FIXME The notification must be replaced when still visible
-    def notify_state(self, title, msg, icon_name):
-        Notify.init('Bumblebee Indicator')
-        
-        self.notification = Notify.Notification.new(summary=title, body=msg, icon=IconSet().get_uri(icon_name,48))
-        #self.notification.set_urgency(Notify.Urgency.NORMAL)
-        self.notification.set_category('device')
-        self.notification.set_hint('transient', GLib.Variant.new_boolean(True))
-        
-        self.notification.show()
 
-# INITIALIZATION OF INDICATOR AND MENU
-    def __init__(self):
-#TODO The icons style and accesibility must be enhanced : see icons/test directory
-        self.statusIcon = Gtk.StatusIcon.new_from_file(filename=app.Config.icon_file_directory + "bumblebee-indicator.svg")
-        self.statusIcon.set_tooltip_text(_(u'Bumblebee is unactive'))
-        self.statusIcon.connect("popup-menu", self.right_click_event)
+class AbstractBumblebeeIndicator():
+    __metaclass__ = ABCMeta
+    
+    #@abstractmethod
+    #def createIndicator(self): pass
 
-        self.card_state=False
-        self.lock_file = "/tmp/.X%s-lock" % app.Config.vgl_display
-
-        self.build_menu()
-        self.statusIcon.position_menu(self.menu, self.statusIcon)
-
-    def right_click_event(self, icon, button, time):
-        self.menu.show_all()
-        
-        def pos(menu, icon):
-            return (Gtk.StatusIcon.position_menu(menu, icon))
-        
-        self.menu.popup(None, None, pos, self.statusIcon, button, time)
-
-    def quit(self, widget, data=None):
-        Gtk.main_quit()
+    def build_menu_separator(self, menu):
+        separator = Gtk.SeparatorMenuItem()
+        #separator.show()
+        menu.append(separator)
 
     def build_menu(self):
         self.menu = Gtk.Menu()
@@ -110,11 +87,6 @@ class BumblebeeIndicator():
 
         self.menu.show_all()
 
-    def build_menu_separator(self, menu):
-        separator = Gtk.SeparatorMenuItem()
-        #separator.show()
-        menu.append(separator)
-
 # FUNCTIONS TO BUILD THE "PREFERRED APP" MENU FROM THE LOCAL DESKTOP FILES
     def update_menu(self, widget=None):
         pref_menu=Gtk.Menu()
@@ -144,7 +116,20 @@ class BumblebeeIndicator():
                 if desktopEntry.isConfigured():
                     self.add_submenu_item(submenu, desktopEntry.getConfiguredEntry())
 
+# FUNCTION TO LAUNCH THE APPS WITHIN THE INDICATOR
+    def call_app(self, widget, app_exec):
+        print app_exec
+        print "Command launched through the bumblebee-ui : " + ' '.join(app_exec)
+#FIXME There is a problem when closing the launched app and when the indicator has been closed: the indicator is still running : What a daemon!!
+        subprocess.Popen(app_exec,shell=False)
+
 # FUNCTIONS TO CHECK FOR THE STATE OF THE INDICATOR
+    @abstractmethod
+    def set_attention_state(self, notify=True): pass
+    
+    @abstractmethod
+    def set_active_state(self, notify=True): pass
+
     def initial_state_checker(self):
         if self.attention_state_condition(): self.set_attention_state(notify=False)
         else : self.set_active_state(notify=False)
@@ -159,40 +144,25 @@ class BumblebeeIndicator():
         if os.path.exists(self.lock_file): return True
         else: return False
 
-# FUNCTIONS TO SET THE STATE OF THE INDICATOR AND LAUNCH NOTIFICATION
-    def set_attention_state(self, notify=True):
-        self.set_status(True, 
-                        app.Config.attention_label, 
-                        app.Config.attention_comment, 
-                        "bumblebee-indicator-active", notify)
-
-    def set_active_state(self, notify=True):
-        self.set_status(False, 
-                        app.Config.active_label, 
-                        app.Config.active_comment,  
-                        "bumblebee-indicator", notify)
-    
-    def set_status(self, status, label, comment, icon, notify):
-        self.card_state = status
-
-        self.statusIcon.set_from_file(app.Config.icon_file_directory + ("bumblebee-indicator-active.svg" if status else "bumblebee-indicator.svg"))
-        self.statusIcon.set_tooltip_text('Bumblebee is active' if status else 'Bumblebee is unactive')
-        if notify == True: self.notify_state(label, comment, icon)
-        self.switch.set_label(label)
-        self.switch.set_active(status)
+#TODO There must be a better way to get the icon than the URI
+#FIXME The notification must be replaced when still visible
+    def notify_state(self, title, msg, icon_name):
+        Notify.init('Bumblebee Indicator')
+        
+        self.notification = Notify.Notification.new(summary=title, body=msg, icon=IconSet().get_uri(icon_name,48))
+        #self.notification.set_urgency(Notify.Urgency.NORMAL)
+        self.notification.set_category('device')
+        self.notification.set_hint('transient', GLib.Variant.new_boolean(True))
+        
+        self.notification.show()
 
 # FUNCTION TO DEFINE THE APPLICATIONS SETTING LINK IN THE INDICATOR
-
     def app_configure(self,widget):
         self.call_app(widget, [ app.Config.applications_setting_path ])
         #Applications_settings()
 
-# FUNCTION TO LAUNCH THE APPS WITHIN THE INDICATOR
-    def call_app(self, widget, app_exec):
-        print app_exec
-        print "Command launched through the bumblebee-ui : " + ' '.join(app_exec)
-#FIXME There is a problem when closing the launched app and when the indicator has been closed: the indicator is still running : What a daemon!!
-        subprocess.Popen(app_exec,shell=False)
+    def quit(self, widget, data=None):
+        Gtk.main_quit()
 
 # MAIN LOOP LAUNCHING A STATE CHECK EVERY TWO SECONDS
 #FIXME This check every two second could be avoid if bumblebee send this signal through dbus with this shell commands,
@@ -204,12 +174,70 @@ class BumblebeeIndicator():
         GObject.timeout_add_seconds(2, self.state_checker)
         Gtk.main()
 
+
+
+class BumblebeeStatusIcon(AbstractBumblebeeIndicator):
+# INITIALIZATION OF INDICATOR AND MENU
+    def __init__(self):
+#TODO The icons style and accesibility must be enhanced : see icons/test directory
+        self.statusIcon = Gtk.StatusIcon.new_from_file(filename=app.Config.icon_file_directory + "bumblebee-indicator.svg")
+        self.statusIcon.set_tooltip_text(_(u"Bumblebee is unactive"))
+        self.statusIcon.connect("popup-menu", self.right_click_event)
+
+        self.card_state=False
+        self.lock_file = "/tmp/.X%s-lock" % app.Config.vgl_display
+
+        self.build_menu()
+        self.statusIcon.position_menu(self.menu, self.statusIcon)
+
+    def right_click_event(self, icon, button, time):
+        self.menu.show_all()
+        
+        def pos(menu, icon):
+            return (Gtk.StatusIcon.position_menu(menu, icon))
+        
+        self.menu.popup(None, None, pos, self.statusIcon, button, time)
+
+# FUNCTIONS TO SET THE STATE OF THE INDICATOR AND LAUNCH NOTIFICATION
+    def set_attention_state(self, notify=True):
+        self.set_status(True, 
+                        app.Config.attention_label,
+                        app.Config.attention_comment,
+                        "bumblebee-indicator-active", notify)
+
+    def set_active_state(self, notify=True):
+        self.set_status(False, 
+                        app.Config.active_label,
+                        app.Config.active_comment,
+                        "bumblebee-indicator", notify)
+    
+    def set_status(self, status, label, comment, icon, notify):
+        self.card_state = status
+
+        self.statusIcon.set_from_file(app.Config.icon_file_directory + ("bumblebee-indicator-active.svg" if status else "bumblebee-indicator.svg"))
+        self.statusIcon.set_tooltip_text(_(u"Bumblebee is active") if status else _(u"Bumblebee is unactive"))
+        if notify == True: self.notify_state(label, comment, icon)
+        self.switch.set_label(label)
+        self.switch.set_active(status)
+
+
+
+
+
+
 if __name__ == "__main__":
     pid_file = 'bumblebee-indicator.pid'
     fp = open(pid_file, 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        indicator = BumblebeeIndicator()
+        
+        try:
+            from gi.repository import AppIndicator3
+            indicator = BumblebeeAppIndicator()
+        except ImportError:
+            # AppIndicator failed to import, fallback to Gtk.StatusIcon.
+            indicator = BumblebeeStatusIcon()
+        
         indicator.main()
     except IOError:
         print "Another instance of bumblebee-indicator is running : Quit"
