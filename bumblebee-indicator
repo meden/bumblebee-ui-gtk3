@@ -179,7 +179,7 @@ class AbstractBumblebeeIndicator():
 class BumblebeeStatusIcon(AbstractBumblebeeIndicator):
 # INITIALIZATION OF INDICATOR AND MENU
     def __init__(self):
-#TODO The icons style and accesibility must be enhanced : see icons/test directory
+#TODO The icons style and accessibility must be enhanced : see icons/test directory
         self.statusIcon = Gtk.StatusIcon.new_from_file(filename=app.Config.icon_file_directory + "bumblebee-indicator.svg")
         self.statusIcon.set_tooltip_text(_(u"Bumblebee is unactive"))
         self.statusIcon.connect("popup-menu", self.right_click_event)
@@ -227,10 +227,10 @@ class BumblebeeStatusIcon(AbstractBumblebeeIndicator):
 class BumblebeeAppIndicator(AbstractBumblebeeIndicator):
 # INITIALIZATION OF INDICATOR AND MENU
     def __init__(self):
-        self.ind = appindicator.Indicator ("bumblebee-indicator", "bumblebee-indicator", appindicator.CATEGORY_HARDWARE)
-        self.ind.set_status (appindicator.STATUS_ACTIVE)
+        self.ind = AppIndicator3.Indicator ("bumblebee-indicator", "bumblebee-indicator", AppIndicator3.IndicatorCategory.HARDWARE)
+        self.ind.set_status (AppIndicator3.IndicatorStatus.ACTIVE)
         self.ind.set_icon_theme_path(app.Config.icon_file_directory)
-#TODO The icons style and accesibility must be enhanced : see icons/test directory
+#TODO The icons style and accessibility must be enhanced : see icons/test directory
         self.ind.set_icon(app.Config.icon_file_directory + "bumblebee-indicator.svg",_(u"Bumblebee is unactive"))
         self.ind.set_attention_icon (app.Config.icon_file_directory + "bumblebee-indicator-active.svg",_(u"Bumblebee is active"))
 
@@ -242,7 +242,25 @@ class BumblebeeAppIndicator(AbstractBumblebeeIndicator):
         self.menu.show()
         self.ind.set_menu(self.menu)
 
+# FUNCTIONS TO SET THE STATE OF THE INDICATOR AND LAUNCH NOTIFICATION
+    def set_attention_state(self, notify=True):
+        self.set_status(True, AppIndicator3.IndicatorStatus.ATTENTION,
+                        app.Config.attention_label,
+                        app.Config.attention_comment,
+                        "bumblebee-indicator-active", notify)
 
+    def set_active_state(self, notify=True):
+        self.set_status(False, AppIndicator3.IndicatorStatus.ACTIVE,
+                        app.Config.active_label,
+                        app.Config.active_comment,
+                        "bumblebee-indicator", notify)
+
+    def set_status(self, status, indicator, label, comment, icon, notify):
+        self.ind.set_status(indicator)
+        self.card_state = status
+        if notify == True: self.notify_state(label, comment, icon)
+        self.switch.set_label(label)
+        self.switch.set_active(status)
 
 
 
