@@ -224,6 +224,28 @@ class BumblebeeStatusIcon(AbstractBumblebeeIndicator):
 
 
 
+class BumblebeeAppIndicator(AbstractBumblebeeIndicator):
+# INITIALIZATION OF INDICATOR AND MENU
+    def __init__(self):
+        self.ind = appindicator.Indicator ("bumblebee-indicator", "bumblebee-indicator", appindicator.CATEGORY_HARDWARE)
+        self.ind.set_status (appindicator.STATUS_ACTIVE)
+        self.ind.set_icon_theme_path(app.Config.icon_file_directory)
+#TODO The icons style and accesibility must be enhanced : see icons/test directory
+        self.ind.set_icon(app.Config.icon_file_directory + "bumblebee-indicator.svg",_(u"Bumblebee is unactive"))
+        self.ind.set_attention_icon (app.Config.icon_file_directory + "bumblebee-indicator-active.svg",_(u"Bumblebee is active"))
+
+        self.card_state=False
+        self.lock_file = "/tmp/.X%s-lock" % app.Config.vgl_display
+
+        self.build_menu()
+
+        self.menu.show()
+        self.ind.set_menu(self.menu)
+
+
+
+
+
 
 if __name__ == "__main__":
     pid_file = 'bumblebee-indicator.pid'

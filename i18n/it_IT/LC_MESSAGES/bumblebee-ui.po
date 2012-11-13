@@ -1,0 +1,105 @@
+# Italian translations for 0.0.1 package.
+# Copyright (C) 2012 THE 0.0.1'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the 0.0.1 package.
+# Alessio Gaeta <alga777@gmail.com>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-08-19 00:10+0200\n"
+"PO-Revision-Date: 2012-11-13 02:52+0100\n"
+"Last-Translator: Alessio Gaeta <alga777@gmail.com>\n"
+"Language-Team: Italian\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: bumblebee-indicator
+msgid "Bumblebee is unactive"
+msgstr "Bumblebee non è attivo"
+
+#: bumblebee-indicator
+msgid "Bumblebee is active"
+msgstr "Bumblebee è attivo"
+
+#: bumblebee-indicator
+msgid "Preferred Apps"
+msgstr "Applicazioni preferite"
+
+#: bumblebee-indicator
+msgid "Configure Apps"
+msgstr "Configura applicazioni"
+
+#: app/AppSettings.py
+msgid "Bumblebee - Applications Settings"
+msgstr "Bumblebee - Impostazioni applicazioni"
+
+#: app/AppSettings.py
+msgid "Select applications"
+msgstr "Selezionare applicazioni"
+
+#: app/AppSettings.py
+msgid ""
+"Choose the application you want to configure to use with the discrete "
+"graphic card."
+msgstr ""
+"Scegliere le applicazioni che devono essere eseguite usando la"
+"scheda grafica discreta"
+
+#: app/AppSettings.py
+msgid "Configure applications"
+msgstr "Configurare applicazioni"
+
+#: app/AppSettings.py
+msgid ""
+"Choose the configuration for each application. Depending on mode the "
+"discrete card will be launched: always (Performance), only when plugged "
+"(Power Save) or with launcher shortcuts (Option)"
+msgstr ""
+"Scegliere la configurazione per ciascuna applicazione. La scheda grafica "
+"discreta sarà usata in base alla Modalità scelta: sempre (Performance), "
+"solo con alimentazione da rete (Power Save) o manualmente "
+"tramite un collegamento nel menù (Opzion)"
+
+#: app/AppSettings.py
+msgid "Bumblebee - Help"
+msgstr "Bumblebee - Aiuto"
+
+#: app/AppSettings.py
+msgid "Applications"
+msgstr "Applicazioni"
+
+#: app/AppSettings.py
+msgid "File Name"
+msgstr "Nome file"
+
+#: app/AppSettings.py
+msgid "Mode"
+msgstr "Modalità"
+
+#: app/AppSettings.py
+msgid "32bits Driver"
+msgstr ""
+
+#: app/AppSettings.py
+msgid "Compression"
+msgstr "Compressione"
+
+#: app/Config.py
+msgid "Bumblebee : ON"
+msgstr "Bumblebee : ON"
+
+#: app/Config.py
+msgid "Bumblebee is in use"
+msgstr "Bumblebee è in uso"
+
+#: app/Config.py
+msgid "Bumblebee : OFF"
+msgstr "Bumblebee : OFF"
+
+#: app/Config.py
+msgid "Bumblebee is not used anymore"
+msgstr "Bumblebee non è più in uso"
