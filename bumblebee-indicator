@@ -28,6 +28,7 @@ from gi.repository import GLib
 from gi.repository import Gtk
 from gi.repository import GObject
 from gi.repository import Notify
+from gi.repository import Gio
 
 import xdg.Menu
 
@@ -51,10 +52,13 @@ class AbstractBumblebeeIndicator():
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        self.card_status=False
         self.lock_file = "/tmp/.X%s-lock" % app.Config.vgl_display
+        self.lock_monitor = Gio.File.new_for_path(self.lock_file).monitor_file(Gio.FileMonitorFlags.NONE, None)
+        self.lock_monitor.connect("changed", self.status_changed)
+        self.poll_status()
 
         self.build_menu()
+
     def build_menu_separator(self, menu):
         separator = Gtk.SeparatorMenuItem()
         #separator.show()
@@ -86,7 +90,7 @@ class AbstractBumblebeeIndicator():
         quit.connect("activate", self.quit)
         self.menu.append(quit)
         
-        self.set_status(status=self.active_status_condition(), notify=False)
+        self.set_status(status=self.card_status, notify=False)
         
         self.menu.show_all()
 
@@ -130,14 +134,15 @@ class AbstractBumblebeeIndicator():
     @abstractmethod
     def set_indicator_status(self, status): pass
 
-    def status_checker(self):
-        status = self.active_status_condition()
-        if self.card_status != status : self.set_status(status)
-        return True
+    def poll_status(self):
+        if os.path.exists(self.lock_file): self.card_status = True
+        else: self.card_status = False
 
-    def active_status_condition(self):
-        if os.path.exists(self.lock_file): return True
-        else: return False
+    def status_changed(self, monitor, a_file, other_file, event_type):
+        if (event_type == Gio.FileMonitorEvent.CREATED):
+            self.set_status(True)
+        elif (event_type ==  Gio.FileMonitorEvent.DELETED):
+            self.set_status(False)
 
     def set_status(self, status, notify=True):
         # status is True if bumblebee is active
@@ -180,8 +185,6 @@ class AbstractBumblebeeIndicator():
 #dbus-send --session --dest=org.bumblebee.indicator /org/bumblebee/indicator org.bumblebee.indicator.BumblebeeStarted
 #dbus-send --session --dest=org.bumblebee.indicator /org/bumblebee/indicator org.bumblebee.indicator.BumblebeeStopped
     def main(self):
-        self.status_checker()
-        GObject.timeout_add_seconds(2, self.status_checker)
         Gtk.main()
 
 
