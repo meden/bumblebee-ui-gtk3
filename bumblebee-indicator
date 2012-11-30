@@ -51,7 +51,7 @@ class AbstractBumblebeeIndicator():
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        self.card_state=False
+        self.card_status=False
         self.lock_file = "/tmp/.X%s-lock" % app.Config.vgl_display
 
         self.build_menu()
@@ -86,7 +86,7 @@ class AbstractBumblebeeIndicator():
         quit.connect("activate", self.quit)
         self.menu.append(quit)
         
-        self.set_status(status=self.attention_state_condition(), notify=False)
+        self.set_status(status=self.active_status_condition(), notify=False)
         
         self.menu.show_all()
 
@@ -126,37 +126,37 @@ class AbstractBumblebeeIndicator():
 #FIXME There is a problem when closing the launched app and when the indicator has been closed: the indicator is still running : What a daemon!!
         subprocess.Popen(app_exec,shell=False)
 
-# FUNCTIONS TO CHECK FOR THE STATE OF THE INDICATOR
+# FUNCTIONS TO CHECK FOR THE STATUS OF THE INDICATOR
     @abstractmethod
     def set_indicator_status(self, status): pass
 
-    def state_checker(self):
-        status = self.attention_state_condition()
-        if self.card_state != status : self.set_status(status)
+    def status_checker(self):
+        status = self.active_status_condition()
+        if self.card_status != status : self.set_status(status)
         return True
 
-    def attention_state_condition(self):
+    def active_status_condition(self):
         if os.path.exists(self.lock_file): return True
         else: return False
 
     def set_status(self, status, notify=True):
         # status is True if bumblebee is active
         # status is False if bumblebee is unactive
-        self.card_state = status
+        self.card_status = status
         
-        label = app.Config.attention_label if status else app.Config.active_label
-        comment = app.Config.attention_comment if status else app.Config.active_comment
+        label = app.Config.active_label if status else app.Config.unactive_label
+        comment = app.Config.active_comment if status else app.Config.unactive_comment
         #FIXME: use Config paramenter for icon name
         icon = 'bumblebee-indicator-active' if status else 'bumblebee-indicator'
         
         self.set_indicator_status(status)
-        if notify == True: self.notify_state(label, comment, icon)
+        if notify == True: self.notify_status(label, comment, icon)
         self.switch.set_label(label)
         self.switch.set_active(status)
 
 #TODO There must be a better way to get the icon than the URI
 #FIXME The notification must be replaced when still visible
-    def notify_state(self, title, msg, icon_name):
+    def notify_status(self, title, msg, icon_name):
         Notify.init('Bumblebee Indicator')
         
         self.notification = Notify.Notification.new(summary=title, body=msg, icon=IconSet().get_uri(icon_name,48))
@@ -174,14 +174,14 @@ class AbstractBumblebeeIndicator():
     def quit(self, widget, data=None):
         Gtk.main_quit()
 
-# MAIN LOOP LAUNCHING A STATE CHECK EVERY TWO SECONDS
+# MAIN LOOP LAUNCHING A STATUS CHECK EVERY TWO SECONDS
 #FIXME This check every two second could be avoid if bumblebee send this signal through dbus with this shell commands,
-#The indicator will then know in real time the state of bumblebee and later of the card with an other signal : bumblebee : the code is already there to receive this signal : think to add this two lines at the good place in the ubuntu devel release
+#The indicator will then know in real time the status of bumblebee and later of the card with an other signal : bumblebee : the code is already there to receive this signal : think to add this two lines at the good place in the ubuntu devel release
 #dbus-send --session --dest=org.bumblebee.indicator /org/bumblebee/indicator org.bumblebee.indicator.BumblebeeStarted
 #dbus-send --session --dest=org.bumblebee.indicator /org/bumblebee/indicator org.bumblebee.indicator.BumblebeeStopped
     def main(self):
-        self.state_checker()
-        GObject.timeout_add_seconds(2, self.state_checker)
+        self.status_checker()
+        GObject.timeout_add_seconds(2, self.status_checker)
         Gtk.main()
 
 
@@ -207,7 +207,7 @@ class BumblebeeStatusIcon(AbstractBumblebeeIndicator):
         self.menu.popup(None, None, pos, self.statusIcon, button, time)
 
     def set_indicator_status(self, status):
-        icon_filename = ('bumblebee-indicator-active.svg' if status else 'bumblebee-indicator.svg')
+        icon_filename = (app.Config.active_icon if status else app.Config.unactive_icon)
         self.statusIcon.set_from_file(app.Config.icon_file_directory + icon_filename)
         self.statusIcon.set_tooltip_text(_(u"Bumblebee is active") if status else _(u"Bumblebee is unactive"))
 
@@ -220,30 +220,30 @@ class BumblebeeAppIndicator(AbstractBumblebeeIndicator):
         self.ind.set_status (AppIndicator3.IndicatorStatus.ACTIVE)
         self.ind.set_icon_theme_path(app.Config.icon_file_directory)
 #TODO The icons style and accessibility must be enhanced : see icons/test directory
-        self.ind.set_icon(app.Config.icon_file_directory + "bumblebee-indicator.svg",_(u"Bumblebee is unactive"))
-        self.ind.set_attention_icon (app.Config.icon_file_directory + "bumblebee-indicator-active.svg",_(u"Bumblebee is active"))
+        self.ind.set_icon(app.Config.icon_file_directory + app.Config.unactive_icon,_(u"Bumblebee is unactive"))
+        self.ind.set_attention_icon (app.Config.icon_file_directory + app.Config.active_icon,_(u"Bumblebee is active"))
         
         super(BumblebeeAppIndicator, self).__init__()
         
         self.ind.set_menu(self.menu)
 
-# FUNCTIONS TO SET THE STATE OF THE INDICATOR AND LAUNCH NOTIFICATION
-    def set_attention_state(self, notify=True):
+# FUNCTIONS TO SET THE STATUS OF THE INDICATOR AND LAUNCH NOTIFICATION
+    def set_attention_status(self, notify=True):
         self.set_status(True, AppIndicator3.IndicatorStatus.ATTENTION,
-                        app.Config.attention_label,
-                        app.Config.attention_comment,
-                        "bumblebee-indicator-active", notify)
-
-    def set_active_state(self, notify=True):
-        self.set_status(False, AppIndicator3.IndicatorStatus.ACTIVE,
                         app.Config.active_label,
                         app.Config.active_comment,
+                        "bumblebee-indicator-active", notify)
+
+    def set_active_status(self, notify=True):
+        self.set_status(False, AppIndicator3.IndicatorStatus.ACTIVE,
+                        app.Config.unactive_label,
+                        app.Config.unactive_comment,
                         "bumblebee-indicator", notify)
 
     def set_status(self, status, indicator, label, comment, icon, notify):
         self.ind.set_status(indicator)
-        self.card_state = status
-        if notify == True: self.notify_state(label, comment, icon)
+        self.card_status = status
+        if notify == True: self.notify_status(label, comment, icon)
         self.switch.set_label(label)
         self.switch.set_active(status)
 

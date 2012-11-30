@@ -34,6 +34,8 @@ menu_file_path=None
 #ICONS FILE PATH
 #icon_file_directory = '/usr/share/bumblebee-ui/icons/'
 icon_file_directory = './icons/'
+active_icon = 'bumblebee-indicator-active.svg'
+unactive_icon = 'bumblebee-indicator.svg'
 
 #TEST IF OPTIRUN IS INSTALLED
 def check_install(name, path):
@@ -52,7 +54,8 @@ check_install('Optirun',optirun_installation_path)
 icon_file_directory = os.path.abspath(os.path.dirname(sys.argv[0])) + '/icons/'
 
 #LOCALISATION FILE PATH
-gettext.install('bumblebee-ui', os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), '../i18n')))
+#FIXME: the argv[0] thing has to be temporary (as ANY plumbed path)
+gettext.install('bumblebee-ui', os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'i18n')))
 
 #ACCEPTED COMPRESSION
 compression_list=['jpeg','proxy','rgb','yuv','xv']
@@ -91,10 +94,10 @@ default_preferred_apps =[ ['Glxgears', ['glxgears']] ,
 
 #NOTIFICATION MESSAGES :
 #TODO Revert when the possibility to turn off the card is back
-attention_label=_(u"Bumblebee : ON")
-attention_comment=_(u"Bumblebee is in use")
-active_label=_(u"Bumblebee : OFF")
-active_comment=_(u"Bumblebee is not used anymore")
+active_label=_(u"Bumblebee : ON")
+active_comment=_(u"Bumblebee is in use")
+unactive_label=_(u"Bumblebee : OFF")
+unactive_comment=_(u"Bumblebee is not used anymore")
 
 #FIXME There must be a better way to store config using MODEL desktop file
 
